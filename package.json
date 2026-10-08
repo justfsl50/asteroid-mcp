@@ -1,0 +1,49 @@
+{
+  "name": "asteroid-mcp",
+  "version": "1.1.0",
+  "description": "Standard Model Context Protocol (MCP) server for Axis Colleges student ERP - Claude Desktop, Cursor & Remote Connectors",
+  "type": "module",
+  "bin": {
+    "asteroid-mcp": "bin/asteroid-mcp.js"
+  },
+  "main": "./dist/index.js",
+  "files": [
+    "bin",
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "prepublishOnly": "npm run build && npm test",
+    "start": "node dist/index.js",
+    "dev": "tsc -p tsconfig.json --watch",
+    "test": "node --test dist/test.js"
+  },
+  "keywords": [
+    "mcp",
+    "model-context-protocol",
+    "claude",
+    "anthropic",
+    "axis-colleges",
+    "student-erp",
+    "ai-tools"
+  ],
+  "author": "Faisal Ansari",
+  "license": "MIT",
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.6.1",
+    "cors": "^2.8.5",
+    "express": "^4.21.2",
+    "zod": "^3.24.2"
+  },
+  "devDependencies": {
+    "@types/cors": "^2.8.17",
+    "@types/express": "^5.0.0",
+    "@types/node": "^22.13.1",
+    "typescript": "^5.7.3"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}
