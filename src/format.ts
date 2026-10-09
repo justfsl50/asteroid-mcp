@@ -262,7 +262,8 @@ export function formatResponse(toolName: string, data: unknown, args: Record<str
         totalPapers += papers.length;
         lines.push(`\n#### 📘 ${s.subject}:`);
         for (const p of papers) {
-          const downloadUrl = `${baseUrl}/download/paper?qbid=${p.qbid}`;
+          const encTitle = encodeURIComponent(String(p.title || `paper_${p.qbid}`));
+          const downloadUrl = `${baseUrl}/download/paper?qbid=${p.qbid}&title=${encTitle}`;
           lines.push(`- **${p.title}** (${p.mode || "Notes"}) — Posted by *${p.postedBy || "Faculty"}* on ${p.postedOn || ""} ➔ [📥 Direct Download File](${downloadUrl})`);
         }
       }
