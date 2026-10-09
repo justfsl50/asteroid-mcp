@@ -1,7 +1,12 @@
 # 🚀 Asteroid MCP — Axis Colleges Student ERP
 
 > **Official Model Context Protocol (MCP) Server for Axis Colleges students.**  
-> Connect Claude Desktop, Cursor, Zed, and AI agents directly to your live academic portal with token-efficient tooling, automatic session management, and rich markdown summaries.
+> Connect Claude Desktop, Cursor, Zed, and AI agents directly to your live academic portal with token-efficient tooling, automatic session management, direct file downloads, and rich markdown summaries.
+
+[![npm version](https://img.shields.io/npm/v/asteroid-mcp.svg)](https://www.npmjs.com/package/asteroid-mcp)
+[![GitHub Repo](https://img.shields.io/badge/github-justfsl50%2Fasteroid--mcp-blue.svg)](https://github.com/justfsl50/asteroid-mcp)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![Node](https://img.shields.io/badge/node-%3E%3D20-green.svg)]()
 
 ---
 
@@ -142,26 +147,27 @@ Because OpenAI is retiring standalone Custom GPTs in favor of the **standard Plu
 
 ---
 
-## 🛠️ Curated MCP Tool Reference (14 Core Tools, ~950 Tokens)
+## 🛠️ Curated MCP Tool Reference (15 Core Tools, ~980 Tokens)
 
-Asteroid MCP v1.1.0 delivers a lean **14-Tool Curated Suite** that slashes system-prompt schema overhead by **72%** (from 3.4k tokens down to ~950 tokens).
+Asteroid MCP v1.2.1 delivers a lean **15-Tool Curated Suite** that slashes system-prompt schema overhead by **72%** (from 3.4k tokens down to ~980 tokens).
 
 | # | Tool Name | Priority | What it Provides | Token Savings |
 |---|---|:---:|---|:---:|
 | 1 | `sign_in` | Auth | Authenticate with Roll No & Password. Session cached in `~/.asteroid/credentials.json`. | Zero password repeats |
 | 2 | `me` | Identity | Full student bio: URN, roll number, program, branch, semester, section, and institute. | Clean markdown |
 | 3 | `dashboard` | **Priority 1** | **The #1 Daily Driver**: Today's classes with live marking badges (`Present ✅`, `Absent ❌`, `Pending ⏳`), overall attendance % (exact, round up, round down), and safe bunk headroom in 1 single call. | ⚡ **75% savings** |
-| 4 | `attendance` | Priority 2 | Full subject-by-subject percentage audit table with attended/total counts and safe skips per course. | ⚡ **68% savings** |
+| 4 | `attendance` | Priority 2 | Full subject-by-subject percentage audit table with attended/total counts, clean course names, and safe skips per course. | ⚡ **68% savings** |
 | 5 | `today` | Priority 2 | Today's lecture schedule with start/end times, room locations, teacher names, and live attendance badges. | ⚡ **65% savings** |
 | 6 | `timetable` | Priority 2 | Full 5-day Monday-Friday weekly lecture timetable grid with subjects, timings, faculty, and room numbers. | ⚡ **60% savings** |
-| 7 | `marks` | Priority 3 | Sessional test scores (CT-1, CT-2, Pre-University PUT), mid-terms, internal marks, and exam results. | Clean markdown |
-| 8 | `syllabus` | Priority 3 | **Curriculum units (Unit 1 to 5), topics taught, and completion %** for any enrolled subject. Powers AI study planning and quizzing. | ⚡ High AI value |
-| 9 | `subjects` | Priority 4 | Enrolled course list with subject codes, theory/practical type, and faculty syllabus completion %. | Dense table |
-| 10 | `question_bank`| Priority 4 | Previous year question papers and lecture notes with **direct clickable browser download links** (`[📥 Direct Download PDF](https://erp.handlebid.lol/download/paper?qbid=...)`). | Zero 404s / No binary crash |
-| 11 | `fees` | Priority 3 | Fee payment transactions, history, official receipts, and department no-dues clearance status. | Consolidated |
-| 12 | `notices` | Priority 3 | College circulars and announcements with smart pagination (`limit`). | ⚡ Paging enabled |
-| 13 | `calendar` | Priority 4 | **Unified Academic Calendar**: Commencement of classes, festival holidays, sessional test dates, and semester exams dynamically matched to student's university (AKTU / CSJMU / BTEUP). | Unified session list |
-| 14 | `class_coordinators` | Priority 4 | **Scoped strictly by Class & Section**: Faculty coordinators mapped to student's exact branch, semester, section (`Section A`), and institute (`AXIS719`). | Class-scoped |
+| 7 | `marks` | Priority 3 | Sessional test scores (CT-1, CT-2, Pre-University PUT), mid-terms, assignment marks (e.g. 10/10), and complete gradebook. | Clean markdown |
+| 8 | `assignments` | Priority 4 | Active homework and sessional assignments across all subjects with due dates, max marks, and **direct instant download links** (`[📥 Direct Download Assignment]`). | Clean files / No 404s |
+| 9 | `syllabus` | Priority 3 | **Curriculum units (Unit 1 to 5), topics taught, and completion %** for any enrolled subject. Powers AI study planning and quizzing. | ⚡ High AI value |
+| 10 | `subjects` | Priority 4 | Enrolled course list with subject codes, theory/practical type, and faculty syllabus completion % (10 subjects total). | Dense table |
+| 11 | `question_bank`| Priority 4 | Previous year question papers and lecture notes with **direct clickable browser download links** (`[📥 Direct Download File](https://erp.handlebid.lol/download/paper?qbid=...)`). | Auto-downloads with clean filename |
+| 12 | `fees` | Priority 3 | Academic session ledger (Debit/Credit balance), payment history, and department clearance / fine status. | Consolidated ledger |
+| 13 | `notices` | Priority 3 | College circulars and announcements with smart pagination (`limit`). | ⚡ Paging enabled |
+| 14 | `calendar` | Priority 4 | **Unified Academic Calendar**: Commencement of classes, festival holidays, sessional test dates, and semester exams dynamically matched to student's university (AKTU / CSJMU / BTEUP). | Unified session list |
+| 15 | `class_coordinators` | Priority 4 | Assigned faculty coordinators mapped to department, year, and institute (`AXIS719`) with official email contacts. | Faculty-scoped |
 
 > 💡 **Diagnostics Mode**: To run the full legacy 33-tool diagnostic suite, launch with `--all-tools` or set `ASTEROID_TOOLS=all`.
 
