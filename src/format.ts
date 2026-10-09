@@ -263,7 +263,7 @@ export function formatResponse(toolName: string, data: unknown, args: Record<str
         lines.push(`\n#### 📘 ${s.subject}:`);
         for (const p of papers) {
           const downloadUrl = `${baseUrl}/download/paper?qbid=${p.qbid}`;
-          lines.push(`- **${p.title}** (${p.mode || "Notes"}) — Posted by *${p.postedBy || "Faculty"}* on ${p.postedOn || ""} ➔ [📥 Direct Download PDF](${downloadUrl})`);
+          lines.push(`- **${p.title}** (${p.mode || "Notes"}) — Posted by *${p.postedBy || "Faculty"}* on ${p.postedOn || ""} ➔ [📥 Direct Download File](${downloadUrl})`);
         }
       }
 
