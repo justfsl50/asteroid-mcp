@@ -72,6 +72,27 @@ test("formatResponse paginates notices to conserve tokens", () => {
   assert.ok(md.includes("45 older notices omitted to conserve tokens"));
 });
 
+test("formatResponse formats assignments with direct download links", () => {
+  const mockAssignments = {
+    count: 1,
+    assignments: [
+      {
+        id: "3242",
+        assignmentNumber: 2,
+        subject: "ARTIFICIAL INTELLIGENCE",
+        subjectCode: "BCS701",
+        title: "AI Assignment 2",
+        postedBy: "Mr. AVINASH KUMAR",
+        postedOn: "29-Aug-2026",
+        maxMarks: "10",
+      },
+    ],
+  };
+  const md = formatResponse("assignments", mockAssignments);
+  assert.ok(md.includes("AI Assignment 2"));
+  assert.ok(md.includes("/download/assignment?asgnid=3242"));
+});
+
 test("CredentialManager loads defaults correctly", () => {
   const cm = new CredentialManager();
   assert.equal(cm.getBaseUrl(), "https://erp.handlebid.lol");

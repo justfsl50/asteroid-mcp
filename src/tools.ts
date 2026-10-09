@@ -178,6 +178,20 @@ export function registerTools(server: McpServer, options: { allTools?: boolean }
     }
   );
 
+  server.tool(
+    "assignments",
+    "[PRIORITY 4 - COURSE ASSIGNMENTS] Active homework and sessional assignments across all subjects with due dates, max marks, and direct download links.",
+    {
+      number: z.number().int().min(1).max(5).optional().describe("Assignment number (1 to 5). Omit to list all active assignments."),
+    },
+    async (args) => {
+      const data = await client.get("/v1/assignments", args);
+      return {
+        content: [{ type: "text", text: formatResponse("assignments", data, args) }],
+      };
+    }
+  );
+
   // ── 5. Campus & Administration ───────────────────────────────────────────
 
   server.tool(

@@ -274,6 +274,37 @@ export function formatResponse(toolName: string, data: unknown, args: Record<str
       return lines.join("\n");
     }
 
+    case "assignments": {
+      const items = pruned.assignments || [];
+      const lines: string[] = [];
+      lines.push(`### 📝 Course Assignments (${pruned.count || items.length} active)`);
+      if (pruned.categories?.length) {
+        const catSummary = pruned.categories
+          .map((c: any) => `Assignment ${c.assignmentNumber}: ${c.count}`)
+          .join(" | ");
+        lines.push(`*Categories: ${catSummary}*`);
+      }
+
+      if (!items.length) {
+        lines.push("No active assignments currently posted for your subjects.");
+        return lines.join("\n");
+      }
+
+      let currentNum = -1;
+      for (const a of items) {
+        if (a.assignmentNumber !== currentNum) {
+          currentNum = a.assignmentNumber;
+          lines.push(`\n#### 📌 ASSIGNMENT ${currentNum}:`);
+        }
+        const encTitle = encodeURIComponent(String(a.title || `assignment_${a.id}`));
+        const downloadUrl = `${baseUrl}/download/assignment?asgnid=${a.id}&title=${encTitle}`;
+        const maxMarks = a.maxMarks ? ` | Max Marks: **${a.maxMarks}**` : "";
+        lines.push(`- **${a.subject}** (${a.subjectCode || ""}): **${a.title}**${maxMarks}`);
+        lines.push(`  - Posted by *${a.postedBy || "Faculty"}* on ${a.postedOn || ""} ➔ [📥 Direct Download Assignment](${downloadUrl})`);
+      }
+      return lines.join("\n");
+    }
+
     case "class_coordinators": {
       const cls = pruned.studentClass || {};
       const lines: string[] = [];
