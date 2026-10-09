@@ -124,12 +124,18 @@ export function registerTools(server: McpServer, options: { allTools?: boolean }
 
   server.tool(
     "marks",
-    "[PRIORITY 3 - EXAM RESULTS] Internal sessional exam marks (CT-1, CT-2, Pre-University PUT), assignment grades, and semester results.",
+    "[PRIORITY 3 - EXAM RESULTS] Internal sessional exam marks (First Sessional, CT-1, CT-2, Assignments), marks obtained, and full performance summary.",
     {
       roll: z.string().optional().describe("Student roll number. Omit to use the profile roll number."),
-      exam: z.string().optional().describe("Exam category (e.g. 'CT-1' or 'MID TERM')."),
+      exam: z.string().optional().describe("Specific exam category (e.g. 'CT-1', 'First Sessional', 'Assignment-1'). Omit to retrieve full student performance summary across all exams and assignments."),
     },
     async (args) => {
+      if (!args.exam) {
+        const summary = await client.get("/v1/exam_summary", args);
+        return {
+          content: [{ type: "text", text: formatResponse("exam_summary", summary, args) }],
+        };
+      }
       const data = await client.get("/v1/exam_result", args);
       return {
         content: [{ type: "text", text: formatResponse("exam_result", data, args) }],

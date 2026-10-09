@@ -143,8 +143,13 @@ export function formatResponse(toolName: string, data: unknown, args: Record<str
         lines.push("\n| Subject | Code | Attended | Total | % | Status |");
         lines.push("|---|---|---|---|---|---|");
         for (const s of pruned.subjects) {
-          const sPct = typeof s.pct === "number" ? s.pct : Number(s.pct || 0);
-          lines.push(`| ${s.name} | ${s.code || "-"} | ${s.present} | ${s.total} | ${sPct}% | ${s.risk || "ok"} |`);
+          const rawSub = String(s.subject ?? s.name ?? "Subject");
+          const codeMatch = /\(([^)]+)\)$/.exec(rawSub);
+          const cleanName = rawSub.replace(/\s*\([^)]+\)$/, "").trim();
+          const cleanCode = s.subjectCode || s.code || (codeMatch ? codeMatch[1] : "-");
+          const sPct = s.total > 0 ? (typeof s.pct === "number" ? `${s.pct}%` : `${s.pct || 0}%`) : "N/A (0 held)";
+          const riskBadge = s.total === 0 ? "No classes held" : (s.risk || "ok");
+          lines.push(`| ${cleanName} | ${cleanCode} | ${s.present} | ${s.total} | ${sPct} | ${riskBadge} |`);
         }
       } else if (pruned.hint) {
         lines.push(`\n*Note: ${pruned.hint}*`);
@@ -232,14 +237,16 @@ export function formatResponse(toolName: string, data: unknown, args: Record<str
           lines.push(`\n#### 📌 ${u.unit || "Unit"}: ${u.title || ""}`);
           if (u.topics?.length) {
             for (const t of u.topics) {
-              const statusBadge = t.completed ? "✅ Completed" : "⏳ Planned";
-              lines.push(`- ${t.name || t.topic} — ${statusBadge}`);
+              const topicTitle = typeof t === "string" ? t : (t.name || t.topic || t.title || "Topic");
+              const statusBadge = typeof t === "object" && t.completed ? " — ✅ Completed" : "";
+              lines.push(`- ${topicTitle}${statusBadge}`);
             }
           }
         }
       } else if (pruned.topics?.length) {
         for (const t of pruned.topics) {
-          lines.push(`- ${t.title || t.topic || t.name}`);
+          const topicTitle = typeof t === "string" ? t : (t.name || t.topic || t.title || "Topic");
+          lines.push(`- ${topicTitle}`);
         }
       } else if (pruned.available?.length) {
         lines.push("\nAvailable subjects with syllabus:");
@@ -253,23 +260,22 @@ export function formatResponse(toolName: string, data: unknown, args: Record<str
     case "question_bank": {
       const subjects = pruned.subjects || [];
       const lines: string[] = [];
-      lines.push(`### 📂 Question Papers & Lecture Notes (${pruned.subjectCount || subjects.length} subjects available)`);
+      const withPapers = subjects.filter((s: any) => s.papers?.length > 0);
+      const withoutPapers = subjects.filter((s: any) => !s.papers?.length);
 
-      let totalPapers = 0;
-      for (const s of subjects) {
-        const papers = s.papers || [];
-        if (!papers.length) continue;
-        totalPapers += papers.length;
+      lines.push(`### 📂 Question Papers & Lecture Notes (${withPapers.length} subjects with uploads, ${subjects.length} enrolled subjects total)`);
+
+      for (const s of withPapers) {
         lines.push(`\n#### 📘 ${s.subject}:`);
-        for (const p of papers) {
+        for (const p of s.papers) {
           const encTitle = encodeURIComponent(String(p.title || `paper_${p.qbid}`));
           const downloadUrl = `${baseUrl}/download/paper?qbid=${p.qbid}&title=${encTitle}`;
           lines.push(`- **${p.title}** (${p.mode || "Notes"}) — Posted by *${p.postedBy || "Faculty"}* on ${p.postedOn || ""} ➔ [📥 Direct Download File](${downloadUrl})`);
         }
       }
 
-      if (totalPapers === 0) {
-        lines.push("No question papers currently uploaded for enrolled subjects.");
+      if (withoutPapers.length > 0) {
+        lines.push(`\n*ℹ️ No lecture notes or papers uploaded yet for: ${withoutPapers.map((s: any) => s.subject).join(", ")}*`);
       }
       return lines.join("\n");
     }
@@ -305,6 +311,75 @@ export function formatResponse(toolName: string, data: unknown, args: Record<str
       return lines.join("\n");
     }
 
+    case "fees": {
+      const lines: string[] = [];
+      const ledger = pruned.ledger || {};
+      const dues = pruned.dues || [];
+      const history = pruned.history || [];
+
+      lines.push("### 💳 Fee Details & Account Ledger");
+      if (ledger.session) {
+        lines.push(`- **Academic Session**: **${ledger.session}**`);
+        lines.push(`- **Outstanding Dues / Debit**: **₹${ledger.debit || "0.00"}** | **Paid / Credit**: **₹${ledger.credit || "0.00"}**`);
+        if (ledger.lastUpdatedOn) lines.push(`- **Last Ledger Update**: ${ledger.lastUpdatedOn}`);
+      }
+
+      if (dues.length > 0) {
+        lines.push("\n#### 🏛️ Department Clearance & Dues:");
+        lines.push("| # | Category | Status | Remarks |");
+        lines.push("|---|---|---|---|");
+        for (const d of dues) {
+          lines.push(`| ${d.sno || "-"} | ${d.category || "General"} | **${d.status || "Clear"}** | ${d.remarks || "-"} |`);
+        }
+      } else {
+        lines.push("\n- **Department Clearance**: ✅ No pending dues or fines recorded.");
+      }
+
+      if (history.length > 0) {
+        lines.push("\n#### 🧾 Payment Transaction History:");
+        for (const h of history) {
+          lines.push(`- Receipt **#${h.receiptNo || "-"}**: ₹${h.amount || 0} paid on ${h.date || "-"} (${h.mode || "Online"})`);
+        }
+      }
+      return lines.join("\n");
+    }
+
+    case "exam_result":
+    case "exam_summary": {
+      const lines: string[] = [];
+      const perf = pruned.performance || [];
+      const subs = pruned.subjects || [];
+
+      lines.push("### 📝 Internal Marks & Performance Record");
+      if (pruned.roll) lines.push(`- **Student Roll**: \`${pruned.roll}\``);
+
+      if (perf.length > 0) {
+        for (const p of perf) {
+          lines.push(`\n#### 📘 ${p.subject} (Attendance: ${p.attendance || "-"}):`);
+          lines.push("| Exam / Assessment | Marks Obtained | Max Marks | Status |");
+          lines.push("|---|---|---|---|");
+          for (const m of p.marks || []) {
+            const badge = m.obtained === "NA" ? "Not Uploaded" : m.obtained === "A" ? "❌ Absent" : "✅ Entered";
+            lines.push(`| ${m.exam} | **${m.obtained}** | ${m.maxMarks} | ${badge} |`);
+          }
+        }
+        return lines.join("\n");
+      }
+
+      if (subs.length > 0) {
+        lines.push(`\n#### Exam: **${pruned.exam || "Assessment"}**:`);
+        lines.push("| Subject | Code | Obtained | Max | Attendance |");
+        lines.push("|---|---|---|---|---|");
+        for (const s of subs) {
+          lines.push(`| ${s.subjectName} | ${s.subjectCode || "-"} | **${s.marksObtained || "-"}** | ${s.maxMarks || "-"} | ${s.attendance || "-"} |`);
+        }
+        return lines.join("\n");
+      }
+
+      lines.push("No examination marks records found for this query.");
+      return lines.join("\n");
+    }
+
     case "class_coordinators": {
       const cls = pruned.studentClass || {};
       const lines: string[] = [];
@@ -319,6 +394,7 @@ export function formatResponse(toolName: string, data: unknown, args: Record<str
       if (coordinators.length === 0) {
         lines.push("No coordinator records found.");
       } else {
+        lines.push("\n*Assigned Faculty Coordinators (assigned at year/department level):*");
         for (const c of coordinators) {
           lines.push(`\n- **${c.name}** (${c.designation || "Class Coordinator"})`);
           if (c.coordinatorOf) lines.push(`  - **Coordinator Of**: ${c.coordinatorOf}`);
